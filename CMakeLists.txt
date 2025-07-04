@@ -64,7 +64,7 @@ function(find_all_max_sdks)
     # Enhanced search patterns for environment variables - more comprehensive coverage
     set(ENV_PATTERNS
         "ADSK_3DSMAX_SDK_"          # Direct SDK environment variables
-        "3DSMAX_SDK_"               # Alternative SDK environment variables  
+        "3DSMAX_SDK_"               # Alternative SDK environment variables
         "MAX_SDK_"                  # Generic SDK environment variables
         "MAXSDK_"                   # Short SDK environment variables
         "ADSK_3DSMAX_x64_"          # Installation paths (need to append SDK subpath)
@@ -78,12 +78,12 @@ function(find_all_max_sdks)
     # Get all available drive letters and create comprehensive search paths
     set(DRIVE_LETTERS "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z")
     set(COMMON_INSTALL_DIRS "")
-    
+
     foreach(DRIVE ${DRIVE_LETTERS})
         # Standard Autodesk installation paths
         list(APPEND COMMON_INSTALL_DIRS
             "${DRIVE}:/Program Files/Autodesk"
-            "${DRIVE}:/Program Files (x86)/Autodesk" 
+            "${DRIVE}:/Program Files (x86)/Autodesk"
             "${DRIVE}:/Autodesk"
             "${DRIVE}:/Apps/Autodesk"
             "${DRIVE}:/Software/Autodesk"
@@ -99,27 +99,27 @@ function(find_all_max_sdks)
 
     # Add environment-based paths if they exist
     if(DEFINED ENV{ProgramFiles})
-        list(APPEND COMMON_INSTALL_DIRS 
+        list(APPEND COMMON_INSTALL_DIRS
             "$ENV{ProgramFiles}/Autodesk"
             "$ENV{ProgramFiles}/3dsMax"
             "$ENV{ProgramFiles}/MaxSDK"
         )
     endif()
     if(DEFINED ENV{ProgramW6432})
-        list(APPEND COMMON_INSTALL_DIRS 
+        list(APPEND COMMON_INSTALL_DIRS
             "$ENV{ProgramW6432}/Autodesk"
             "$ENV{ProgramW6432}/3dsMax"
             "$ENV{ProgramW6432}/MaxSDK"
         )
     endif()
     if(DEFINED ENV{ProgramFiles\(x86\)})
-        list(APPEND COMMON_INSTALL_DIRS 
+        list(APPEND COMMON_INSTALL_DIRS
             "$ENV{ProgramFiles\(x86\)}/Autodesk"
             "$ENV{ProgramFiles\(x86\)}/3dsMax"
             "$ENV{ProgramFiles\(x86\)}/MaxSDK"
         )
     endif()
-    
+
     # Add user profile paths
     if(DEFINED ENV{USERPROFILE})
         list(APPEND COMMON_INSTALL_DIRS
@@ -211,12 +211,12 @@ function(find_all_max_sdks)
                         "${SEARCH_PATH}/include/max.h"
                         "${SEARCH_PATH}/maxsdk/include/max.h"
                     )
-                    
+
                     foreach(HEADER_PATH ${HEADER_PATHS})
                         if(EXISTS "${HEADER_PATH}")
                             get_filename_component(FINAL_SDK_PATH "${HEADER_PATH}" DIRECTORY)
                             get_filename_component(FINAL_SDK_PATH "${FINAL_SDK_PATH}" DIRECTORY)
-                            
+
                             # Check if we already found this version
                             list(FIND MAX_SDK_VERSIONS "${VERSION}" VERSION_INDEX)
                             if(VERSION_INDEX EQUAL -1)
@@ -227,7 +227,7 @@ function(find_all_max_sdks)
                             endif()
                         endif()
                     endforeach()
-                    
+
                     # If we found this version, break out of the paths loop
                     list(FIND MAX_SDK_VERSIONS "${VERSION}" VERSION_INDEX)
                     if(NOT VERSION_INDEX EQUAL -1)
@@ -242,7 +242,7 @@ function(find_all_max_sdks)
     message(STATUS "Performing comprehensive filesystem scan for remaining SDKs...")
     foreach(DRIVE ${DRIVE_LETTERS})
         if(EXISTS "${DRIVE}:/")
-            file(GLOB_RECURSE MAX_HEADERS 
+            file(GLOB_RECURSE MAX_HEADERS
                 LIST_DIRECTORIES false
                 "${DRIVE}:/*/include/max.h"
                 "${DRIVE}:/*/maxsdk/include/max.h"
@@ -251,11 +251,11 @@ function(find_all_max_sdks)
                 "${DRIVE}:/*/*/*/include/max.h"
                 "${DRIVE}:/*/*/*/maxsdk/include/max.h"
             )
-            
+
             foreach(HEADER_FILE ${MAX_HEADERS})
                 get_filename_component(POTENTIAL_SDK_PATH "${HEADER_FILE}" DIRECTORY)
                 get_filename_component(POTENTIAL_SDK_PATH "${POTENTIAL_SDK_PATH}" DIRECTORY)
-                
+
                 # Try to extract version from path
                 string(REGEX MATCH "20[0-9][0-9]|[12][0-9]" POTENTIAL_VERSION "${POTENTIAL_SDK_PATH}")
                 if(POTENTIAL_VERSION)
@@ -275,7 +275,7 @@ function(find_all_max_sdks)
     if(MAX_SDK_VERSIONS)
         list(LENGTH MAX_SDK_VERSIONS LIST_LENGTH)
         math(EXPR LAST_INDEX "${LIST_LENGTH} - 1")
-        
+
         # Simple bubble sort by version number
         foreach(I RANGE 0 ${LAST_INDEX})
             math(EXPR INNER_LAST "${LAST_INDEX} - ${I}")
@@ -284,15 +284,15 @@ function(find_all_max_sdks)
                 if(NEXT_J LESS_EQUAL ${LAST_INDEX})
                     list(GET MAX_SDK_VERSIONS ${J} VER_A)
                     list(GET MAX_SDK_VERSIONS ${NEXT_J} VER_B)
-                    
+
                     if(VER_A LESS VER_B)
                         # Swap versions
                         list(GET MAX_SDK_PATHS ${J} PATH_A)
                         list(GET MAX_SDK_PATHS ${NEXT_J} PATH_B)
-                        
+
                         list(REMOVE_AT MAX_SDK_VERSIONS ${J} ${NEXT_J})
                         list(REMOVE_AT MAX_SDK_PATHS ${J} ${NEXT_J})
-                        
+
                         list(INSERT MAX_SDK_VERSIONS ${J} ${VER_B})
                         list(INSERT MAX_SDK_VERSIONS ${NEXT_J} ${VER_A})
                         list(INSERT MAX_SDK_PATHS ${J} ${PATH_B})
@@ -358,7 +358,7 @@ message(STATUS "Found 3ds Max SDK at: ${MAX_SDK_PATH}")
 function(setup_xplnobj_library)
     set(XPLNOBJ_REPO_URL "https://github.com/Coalition-of-Freeware-Developers/XplnObj.git")
     set(XPLNOBJ_LOCAL_PATH "${CMAKE_SOURCE_DIR}/third_party/XplnObj")
-    
+
     # Check if XplnObj is already available in common locations
     set(XPLNOBJ_SEARCH_PATHS
         $ENV{XPLNOBJ_PATH}
@@ -366,7 +366,7 @@ function(setup_xplnobj_library)
         ${CMAKE_SOURCE_DIR}/external/XplnObj
         ${CMAKE_SOURCE_DIR}/../XplnObj
     )
-    
+
     foreach(SEARCH_PATH ${XPLNOBJ_SEARCH_PATHS})
         if(EXISTS "${SEARCH_PATH}/include/xpln/obj/ObjMain.h")
             message(STATUS "Found existing XplnObj installation at: ${SEARCH_PATH}")
@@ -374,7 +374,7 @@ function(setup_xplnobj_library)
             return()
         endif()
     endforeach()
-    
+
     # Check if we should automatically download and build XplnObj
     if(NOT DEFINED AUTO_FETCH_XPLNOBJ)
         message(STATUS "===============================================")
@@ -395,20 +395,20 @@ function(setup_xplnobj_library)
         message(STATUS "===============================================")
         message(FATAL_ERROR "XplnObj library setup required. Please choose an option above.")
     endif()
-    
+
     if(NOT AUTO_FETCH_XPLNOBJ)
         message(FATAL_ERROR "XplnObj library not found and AUTO_FETCH_XPLNOBJ is disabled. Please set XPLNOBJ_PATH environment variable or enable auto-fetch.")
     endif()
-    
+
     # Auto-fetch and build XplnObj
     message(STATUS "Automatically setting up XplnObj library...")
-    
+
     # Check if git is available
     find_package(Git QUIET)
     if(NOT GIT_FOUND)
         message(FATAL_ERROR "Git is required to download XplnObj library. Please install Git or manually download the library.")
     endif()
-    
+
     # Clone repository if it doesn't exist
     if(NOT EXISTS "${XPLNOBJ_LOCAL_PATH}")
         message(STATUS "Cloning XplnObj repository...")
@@ -418,11 +418,11 @@ function(setup_xplnobj_library)
             OUTPUT_VARIABLE GIT_OUTPUT
             ERROR_VARIABLE GIT_ERROR
         )
-        
+
         if(NOT GIT_RESULT EQUAL 0)
             message(FATAL_ERROR "Failed to clone XplnObj repository: ${GIT_ERROR}")
         endif()
-        
+
         message(STATUS "Successfully cloned XplnObj repository")
     else()
         message(STATUS "XplnObj repository already exists, updating...")
@@ -433,57 +433,57 @@ function(setup_xplnobj_library)
             OUTPUT_VARIABLE GIT_OUTPUT
             ERROR_VARIABLE GIT_ERROR
         )
-        
+
         if(NOT GIT_RESULT EQUAL 0)
             message(WARNING "Failed to update XplnObj repository: ${GIT_ERROR}")
         endif()
     endif()
-    
+
     # Check if the cloned repository has the expected structure
     if(NOT EXISTS "${XPLNOBJ_LOCAL_PATH}/include/xpln/obj/ObjMain.h")
         message(FATAL_ERROR "XplnObj repository does not have expected structure. Please check the repository.")
     endif()
-    
+
     # Build XplnObj if needed
     set(XPLNOBJ_BUILD_DIR "${XPLNOBJ_LOCAL_PATH}/build")
     set(XPLNOBJ_INSTALL_DIR "${XPLNOBJ_LOCAL_PATH}/install")
-    
+
     if(NOT EXISTS "${XPLNOBJ_INSTALL_DIR}/lib")
         message(STATUS "Building XplnObj library...")
-        
+
         # Create build directory
         file(MAKE_DIRECTORY ${XPLNOBJ_BUILD_DIR})
-        
+
         # Try to configure XplnObj with modern CMake and disable Conan
         # First, try to patch the CMakeLists.txt to skip Conan
         set(XPLNOBJ_CMAKE_PATCH "${XPLNOBJ_LOCAL_PATH}/CMakeLists_original.txt")
         if(NOT EXISTS "${XPLNOBJ_CMAKE_PATCH}")
             # Backup original CMakeLists.txt
             file(COPY "${XPLNOBJ_LOCAL_PATH}/CMakeLists.txt" DESTINATION "${XPLNOBJ_LOCAL_PATH}/CMakeLists_original.txt")
-            
+
             # Read and modify the CMakeLists.txt to skip Conan
             file(READ "${XPLNOBJ_LOCAL_PATH}/CMakeLists.txt" XPLNOBJ_CMAKE_CONTENT)
-            
+
             # Replace the Conan section with a simple comment
-            string(REPLACE 
+            string(REPLACE
                 "include(StsConan)\nconan_cmake_run(CONANFILE conanfile.py\n                BASIC_SETUP CMAKE_TARGETS KEEP_RPATHS\n                BUILD missing)"
                 "# Conan dependency management disabled for compatibility\n# All dependencies are assumed to be header-only or not required"
                 XPLNOBJ_CMAKE_CONTENT "${XPLNOBJ_CMAKE_CONTENT}")
-            
+
             # Update minimum CMake version to avoid deprecation warnings
-            string(REPLACE 
+            string(REPLACE
                 "cmake_minimum_required (VERSION 3.7.0)"
                 "cmake_minimum_required (VERSION 3.15.0)"
                 XPLNOBJ_CMAKE_CONTENT "${XPLNOBJ_CMAKE_CONTENT}")
-            
+
             # Write the modified CMakeLists.txt
             file(WRITE "${XPLNOBJ_LOCAL_PATH}/CMakeLists.txt" "${XPLNOBJ_CMAKE_CONTENT}")
         endif()
-        
+
         # Configure XplnObj with testing disabled
         execute_process(
-            COMMAND ${CMAKE_COMMAND} 
-                -S ${XPLNOBJ_LOCAL_PATH} 
+            COMMAND ${CMAKE_COMMAND}
+                -S ${XPLNOBJ_LOCAL_PATH}
                 -B ${XPLNOBJ_BUILD_DIR}
                 -DCMAKE_INSTALL_PREFIX=${XPLNOBJ_INSTALL_DIR}
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -493,15 +493,15 @@ function(setup_xplnobj_library)
             OUTPUT_VARIABLE CMAKE_OUTPUT
             ERROR_VARIABLE CMAKE_ERROR
         )
-        
+
         if(NOT CMAKE_RESULT EQUAL 0)
             message(STATUS "First attempt failed, trying fallback approach...")
             message(STATUS "CMake Output: ${CMAKE_OUTPUT}")
             message(STATUS "CMake Error: ${CMAKE_ERROR}")
-            
+
             # Fallback: Try to build just the library part manually
             message(STATUS "Attempting manual library build...")
-            
+
             # Create a minimal CMakeLists.txt for just the library
             set(MINIMAL_CMAKE_CONTENT "
 cmake_minimum_required(VERSION 3.15.0)
@@ -511,7 +511,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Collect all source files
-file(GLOB_RECURSE SRC_FILES 
+file(GLOB_RECURSE SRC_FILES
     \"src/*.cpp\"
     \"src/*.h\"
 )
@@ -545,12 +545,12 @@ install(EXPORT XplnObjTargets
     DESTINATION lib/cmake/XplnObj
 )
 ")
-            
+
             file(WRITE "${XPLNOBJ_BUILD_DIR}/CMakeLists.txt" "${MINIMAL_CMAKE_CONTENT}")
-            
+
             # Try configuring with minimal CMakeLists.txt
             execute_process(
-                COMMAND ${CMAKE_COMMAND} 
+                COMMAND ${CMAKE_COMMAND}
                     -S ${XPLNOBJ_BUILD_DIR}
                     -B ${XPLNOBJ_BUILD_DIR}/build
                     -DCMAKE_INSTALL_PREFIX=${XPLNOBJ_INSTALL_DIR}
@@ -560,23 +560,23 @@ install(EXPORT XplnObjTargets
                 OUTPUT_VARIABLE CMAKE_OUTPUT2
                 ERROR_VARIABLE CMAKE_ERROR2
             )
-            
+
             if(NOT CMAKE_RESULT2 EQUAL 0)
                 message(FATAL_ERROR "Failed to configure XplnObj with fallback method: ${CMAKE_ERROR2}")
             endif()
-            
+
             set(BUILD_DIR_TO_USE "${XPLNOBJ_BUILD_DIR}/build")
         else()
             set(BUILD_DIR_TO_USE "${XPLNOBJ_BUILD_DIR}")
         endif()
-        
+
         # Determine build configuration
         if(CMAKE_BUILD_TYPE)
             set(BUILD_CONFIG ${CMAKE_BUILD_TYPE})
         else()
             set(BUILD_CONFIG "Release")
         endif()
-        
+
         # Build XplnObj
         execute_process(
             COMMAND ${CMAKE_COMMAND} --build ${BUILD_DIR_TO_USE} --config ${BUILD_CONFIG}
@@ -584,11 +584,11 @@ install(EXPORT XplnObjTargets
             OUTPUT_VARIABLE BUILD_OUTPUT
             ERROR_VARIABLE BUILD_ERROR
         )
-        
+
         if(NOT BUILD_RESULT EQUAL 0)
             message(FATAL_ERROR "Failed to build XplnObj: ${BUILD_ERROR}")
         endif()
-        
+
         # Install XplnObj
         execute_process(
             COMMAND ${CMAKE_COMMAND} --install ${BUILD_DIR_TO_USE} --config ${BUILD_CONFIG}
@@ -596,17 +596,17 @@ install(EXPORT XplnObjTargets
             OUTPUT_VARIABLE INSTALL_OUTPUT
             ERROR_VARIABLE INSTALL_ERROR
         )
-        
+
         if(NOT INSTALL_RESULT EQUAL 0)
             message(FATAL_ERROR "Failed to install XplnObj: ${INSTALL_ERROR}")
         endif()
-        
+
         message(STATUS "Successfully built and installed XplnObj library")
     endif()
-    
+
     # Set the root path for finding the library
     set(XPLNOBJ_ROOT_PATH "${XPLNOBJ_INSTALL_DIR}" PARENT_SCOPE)
-    
+
     # Suggest setting environment variable for future builds
     message(STATUS "===============================================")
     message(STATUS "XplnObj library has been successfully set up!")
@@ -650,7 +650,7 @@ find_path(XPLNOBJ_INCLUDE_DIR "xpln/obj/ObjMain.h"
     DOC "XplnObj library include directory"
 )
 
-find_library(XPLNOBJ_LIBRARY 
+find_library(XPLNOBJ_LIBRARY
     NAMES XplnObj xplnobj
     HINTS ${XPLNOBJ_LIB_SEARCH_HINTS}
     DOC "XplnObj library"
