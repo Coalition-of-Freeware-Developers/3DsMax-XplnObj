@@ -32,30 +32,20 @@
 #
 #----------------------------------------------------------------------------------#
 #
-# Conan basic setup. 
+# This file is now deprecated - Conan dependency management has been removed.
+# Dependencies are now managed directly through CMake find_package/find_path commands.
 #
-# Version 1.0.0
+# Version 2.0.0 - Conan removed
 #
 #----------------------------------------------------------------------------------#
 #//////////////////////////////////////////////////////////////////////////////////#
 #----------------------------------------------------------------------------------#
-# conan.io
 
-cmake_minimum_required (VERSION 3.7.0)
-
+# This file is kept for backward compatibility but no longer used
 message(STATUS "==============================================")
-message(STATUS "Process conan data")
-if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo_multi.cmake")
-	include(${CMAKE_BINARY_DIR}/conanbuildinfo_multi.cmake)
-	message(STATUS "Found and included 'conanbuildinfo_multi.cmake'")
-elseif(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	message(STATUS "Found and included 'conanbuildinfo.cmake'")
-else()
-	message(FATAL_ERROR "'conanbuildinfo_multi.cmake' or 'conanbuildinfo.cmake' are not found."
-	" Probably you have forgotten to run 'conan install'")
-endif()
-conan_basic_setup(TARGETS)
+message(STATUS "Conan dependency management has been removed")
+message(STATUS "Dependencies are now managed directly through CMake")
+message(STATUS "==============================================")
 
 #----------------------------------------------------------------------------------#
 #//////////////////////////////////////////////////////////////////////////////////#

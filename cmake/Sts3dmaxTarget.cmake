@@ -54,17 +54,18 @@
 
 include(CMakeParseArguments)
 
-function(SETUP_MAX_TERGET)
+function(SETUP_MAX_TARGET)
 
 	#set(options OPTIONAL FAST)
 	#set(multiValueArgs TARGETS CONFIGURATIONS)
 	set(oneValueArgs SDK_TARGET 3DMAX_VERSION)
-	cmake_parse_arguments(SETUP_MAX_TERGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+	cmake_parse_arguments(SETUP_MAX_TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-	if(TARGET CONAN_PKG::${SETUP_MAX_TERGET_SDK_TARGET})
-		message(STATUS "3DsMax + ${SETUP_MAX_TERGET_3DMAX_VERSION}")
-		set (PROJECT "3DsMax-${SETUP_MAX_TERGET_3DMAX_VERSION}")
-		set (OUTPUT_NAME "3DsMax${SETUP_MAX_TERGET_3DMAX_VERSION}-XplnObj")
+	# Check if we have the required dependencies for this version
+	if(MAX_SDK_PATH AND (XPLNOBJ_INCLUDE_DIR AND XPLNOBJ_LIBRARY))
+		message(STATUS "3DsMax + ${SETUP_MAX_TARGET_3DMAX_VERSION}")
+		set (PROJECT "3DsMax-${SETUP_MAX_TARGET_3DMAX_VERSION}")
+		set (OUTPUT_NAME "3DsMax${SETUP_MAX_TARGET_3DMAX_VERSION}-XplnObj")
 		
 		#--------------------------------------------------------------------------#
 		#//////////////////////////////////////////////////////////////////////////#
@@ -77,9 +78,17 @@ function(SETUP_MAX_TERGET)
 			add_definitions (-D_WIN64)
 			add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
 			add_definitions (-DISOLATION_AWARE_ENABLED=1)
+			add_definitions (-DNOMINMAX)  # Prevent min/max macro conflicts
+			add_definitions (-DWIN32_LEAN_AND_MEAN)  # Reduce Windows header bloat
 		else ()
 			message (FATAL_ERROR "<${PROJECT}> Unknown compiler")
 		endif ()
+
+		# Add version-specific definitions
+		string(REGEX MATCH "([0-9]+)" MAX_VERSION_MAJOR "${SETUP_MAX_TARGET_3DMAX_VERSION}")
+		if(MAX_VERSION_MAJOR)
+			add_definitions(-DMAX_VERSION_MAJOR=${MAX_VERSION_MAJOR})
+		endif()
 
 		#--------------------------------------------------------------------------#
 		#//////////////////////////////////////////////////////////////////////////#
@@ -113,15 +122,42 @@ function(SETUP_MAX_TERGET)
 
 		include_directories (${CMAKE_SOURCE_DIR}/include)
 		include_directories (${CMAKE_SOURCE_DIR}/src)
+		include_directories (${MAX_SDK_PATH}/include)
+		
+		if(XPLNOBJ_INCLUDE_DIR)
+			include_directories (${XPLNOBJ_INCLUDE_DIR})
+		endif()
+
+		# Add additional include directories for utility libraries
+		include_directories (${CMAKE_SOURCE_DIR}/src/3rdParties/json/single_include)
 
 		#--------------------------------------------------------------------------#
 		#//////////////////////////////////////////////////////////////////////////#
 		#--------------------------------------------------------------------------#
 		
 		add_library(${PROJECT} SHARED ${CM_FILES})
-		target_link_libraries(${PROJECT} CONAN_PKG::${SETUP_MAX_TERGET_SDK_TARGET})
-		target_link_libraries(${PROJECT} CONAN_PKG::XplnObj)
-		target_link_libraries(${PROJECT} optimized Winhttp debug Winhttp)
+		
+		# Link 3ds Max SDK libraries
+		target_link_libraries(${PROJECT} 
+			${MAX_SDK_PATH}/lib/x64/core.lib
+			${MAX_SDK_PATH}/lib/x64/maxutil.lib
+			${MAX_SDK_PATH}/lib/x64/mesh.lib
+			${MAX_SDK_PATH}/lib/x64/mnmath.lib
+			${MAX_SDK_PATH}/lib/x64/paramblk2.lib
+			${MAX_SDK_PATH}/lib/x64/bmm.lib
+		)
+		
+		# Link XplnObj library if available
+		if(XPLNOBJ_LIBRARY)
+			target_link_libraries(${PROJECT} ${XPLNOBJ_LIBRARY})
+		endif()
+		
+		# Link Windows libraries
+		target_link_libraries(${PROJECT} 
+			optimized Winhttp debug Winhttp
+			version.lib
+			comctl32.lib
+		)
 
 		#--------------------------------------------------------------------------#
 		#//////////////////////////////////////////////////////////////////////////#
@@ -132,6 +168,12 @@ function(SETUP_MAX_TERGET)
 		set_target_properties(${PROJECT} PROPERTIES SUFFIX  ".dlu")
 		set_target_properties(${PROJECT} PROPERTIES DEBUG_POSTFIX "-x64")
 		set_target_properties(${PROJECT} PROPERTIES RELEASE_POSTFIX "-x64")
+		
+		# Set additional properties for modern compatibility
+		set_target_properties(${PROJECT} PROPERTIES
+			CXX_STANDARD 17
+			CXX_STANDARD_REQUIRED ON
+		)
 		
 		#--------------------------------------------------------------------------#
 		#//////////////////////////////////////////////////////////////////////////#
@@ -144,10 +186,10 @@ function(SETUP_MAX_TERGET)
 		#--------------------------------------------------------------------------#
 		
 	else()
-		message(STATUS "3DsMax - ${SETUP_MAX_TERGET_3DMAX_VERSION}")
+		message(STATUS "3DsMax - ${SETUP_MAX_TARGET_3DMAX_VERSION} (skipped - missing dependencies)")
 	endif()
 	
-endfunction(SETUP_MAX_TERGET)
+endfunction(SETUP_MAX_TARGET)
 
 #----------------------------------------------------------------------------------#
 #//////////////////////////////////////////////////////////////////////////////////#
