@@ -625,11 +625,17 @@ setup_xplnobj_library()
 # Now find XplnObj library using the determined root path
 if(XPLNOBJ_ROOT_PATH)
     set(XPLNOBJ_SEARCH_HINTS
+        ${XPLNOBJ_ROOT_PATH}/install/include
         ${XPLNOBJ_ROOT_PATH}/include
         ${XPLNOBJ_ROOT_PATH}
     )
     set(XPLNOBJ_LIB_SEARCH_HINTS
+        ${XPLNOBJ_ROOT_PATH}/install/lib
+        ${XPLNOBJ_ROOT_PATH}/install/Release
+        ${XPLNOBJ_ROOT_PATH}/install/Debug
         ${XPLNOBJ_ROOT_PATH}/lib
+        ${XPLNOBJ_ROOT_PATH}/Release
+        ${XPLNOBJ_ROOT_PATH}/Debug
         ${XPLNOBJ_ROOT_PATH}
     )
 else()
@@ -640,8 +646,18 @@ else()
     )
     set(XPLNOBJ_LIB_SEARCH_HINTS
         $ENV{XPLNOBJ_PATH}/lib
+        $ENV{XPLNOBJ_PATH}/Release
+        $ENV{XPLNOBJ_PATH}/Debug
         ${CMAKE_SOURCE_DIR}/third_party/XplnObj/lib
+        ${CMAKE_SOURCE_DIR}/third_party/XplnObj/install/lib
+        ${CMAKE_SOURCE_DIR}/third_party/XplnObj/install/Release
+        ${CMAKE_SOURCE_DIR}/third_party/XplnObj/install/Debug
+        ${CMAKE_SOURCE_DIR}/third_party/XplnObj/build/Release
+        ${CMAKE_SOURCE_DIR}/third_party/XplnObj/build/Debug
         ${CMAKE_SOURCE_DIR}/external/XplnObj/lib
+        ${CMAKE_SOURCE_DIR}/external/XplnObj/install/lib
+        ${CMAKE_SOURCE_DIR}/external/XplnObj/install/Release
+        ${CMAKE_SOURCE_DIR}/external/XplnObj/install/Debug
     )
 endif()
 
@@ -720,22 +736,30 @@ include(Sts3dmaxTarget)
 
 # Build targets for detected SDK versions
 if(MAX_SDK_PATHS)
-    # Build for all detected SDK versions
+    # Build for all detected SDK versions, but avoid duplicates
     list(LENGTH MAX_SDK_PATHS NUM_DETECTED_SDKS)
+    set(PROCESSED_VERSIONS "")
     foreach(INDEX RANGE 0 ${NUM_DETECTED_SDKS})
         if(INDEX LESS ${NUM_DETECTED_SDKS})
             list(GET MAX_SDK_PATHS ${INDEX} CURRENT_SDK_PATH)
             list(GET MAX_SDK_VERSIONS ${INDEX} CURRENT_SDK_VERSION)
 
-            # Temporarily set the SDK path for this version
-            set(MAX_SDK_PATH_BACKUP ${MAX_SDK_PATH})
-            set(MAX_SDK_PATH ${CURRENT_SDK_PATH})
+            # Check if we've already processed this version
+            list(FIND PROCESSED_VERSIONS "${CURRENT_SDK_VERSION}" VERSION_ALREADY_PROCESSED)
+            if(VERSION_ALREADY_PROCESSED EQUAL -1)
+                # Mark this version as processed
+                list(APPEND PROCESSED_VERSIONS "${CURRENT_SDK_VERSION}")
 
-            message(STATUS "Setting up target for 3ds Max ${CURRENT_SDK_VERSION} SDK")
-            SETUP_MAX_TARGET(SDK_TARGET "3DsMaxSdk${CURRENT_SDK_VERSION}" 3DMAX_VERSION "${CURRENT_SDK_VERSION}")
+                # Temporarily set the SDK path for this version
+                set(MAX_SDK_PATH_BACKUP ${MAX_SDK_PATH})
+                set(MAX_SDK_PATH ${CURRENT_SDK_PATH})
 
-            # Restore the primary SDK path
-            set(MAX_SDK_PATH ${MAX_SDK_PATH_BACKUP})
+                message(STATUS "Setting up target for 3ds Max ${CURRENT_SDK_VERSION} SDK")
+                SETUP_MAX_TARGET(SDK_TARGET "3DsMaxSdk${CURRENT_SDK_VERSION}" 3DMAX_VERSION "${CURRENT_SDK_VERSION}")
+
+                # Restore the primary SDK path
+                set(MAX_SDK_PATH ${MAX_SDK_PATH_BACKUP})
+            endif()
         endif()
     endforeach()
 else()

@@ -11,3 +11,4 @@ src/Info.h
 output/
 cmake/variables.txt
 build
+.github/instructions

@@ -1,9 +1,19 @@
 {
     "cSpell.words": [
+        "conanfile",
+        "DAUTO",
+        "DBUILD",
+        "DCMAKE",
         "dmax",
         "DSMAX",
+        "endforeach",
+        "endfunction",
         "maxsdk",
+        "RPATHS",
+        "setx",
+        "stdafx",
         "steptosky",
+        "USERPROFILE",
         "xpln",
         "xplnobj"
     ]
